@@ -61,8 +61,12 @@ def highlight_code(code, lang, linenos=''):
     return res
 
 def list_languages():
-    return sorted(map(lambda x: (x[0], x[1][0]), get_all_lexers()),
+    list_lang =  sorted(map(lambda x: (x[0], x[1][0]), get_all_lexers()),
                   key=lambda x: x[1].lower())
+
+    list_lang = list_lang + [('MathJax', 'mathjax')]
+
+    return list_lang
 
 def lang_from_ext(ext):
     try:
@@ -213,6 +217,8 @@ html_pre = '''<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   <link rel="alternate stylesheet" type="text/css" href="/light-center.css" title="Light center design with a bit of css"/>
   <link rel="alternate stylesheet" type="text/css" href="/dark.css" title="Dark"/>
   <link rel="alternate stylesheet" type="text/css" href="/dark2.css" title="Alternative dark"/>
+  <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
 </head>
 <body>'''
 
@@ -240,10 +246,14 @@ def extract_args(uri):
     return dict(content)
 
 def view_paste(paste, args, handler):
+
+
     pre = html_pre
     post = ''
     paste_content = read_paste(filename_path + '/' + paste)
     meta = read_meta(None, paste)
+
+
     if 'raw' in args:
         handler.set_header('Content-Type', 'text/plain; charset=utf-8')
         handler.write(paste_content)
@@ -260,9 +270,12 @@ def view_paste(paste, args, handler):
             else:
                 paste_content = highlight_code(paste_content, hl)
         except ClassNotFound as e:
+
             paste_content = escape(paste_content)
-            pre += '<pre>'
-            post += '</pre>'
+
+            if not 'mathjax' in meta['hl'] :
+                pre += '<pre>'
+                post += '</pre>'
     else:
         if 'ln' in args:
             paste_content = highlight_code(paste_content,
